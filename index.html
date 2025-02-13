@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search|MovieStar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap">
+ 
+    <style>
+ :root {
+    --primary-color: #ffcc00; /* Old Hollywood Gold */
+    --secondary-color: #1a1a1a; /* Deep Charcoal Grey - almost black */
+    --accent-color: #e62429; /* Rich Red - like velvet curtains */
+    --text-color-light: #f8f0e3; /* Off-white, parchment-like */
+    --text-color-dark: #333;
+    --background-color: #f0f0f0; /* Light grey background - for search page primarily */
+    --font-family-headings: 'Playfair Display', serif; /* Elegant Serif for Headings */
+    --font-family-body: 'Arial', sans-serif; /* Readable sans-serif for body */
+}
+
+/* Reset and Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family-body);
+    background-color: var(--background-color);
+    color: var(--text-color-dark);
+    text-align: center;
+    padding: 20px;
+}
+
+/* Typography */
+h1 {
+    font-family: var(--font-family-headings);
+    font-size: 3.5rem;
+    color: var(--primary-color); /* Gold for main headings */
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Stronger text shadow */
+}
+
+h2 {
+    font-family: var(--font-family-headings); /* Apply to h2s as well for consistency */
+    color: var(--accent-color); /* Red for sub-headings */
+}
+
+.search-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 40px;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly more opaque white */
+    padding: 30px; /* Increased padding */
+    border-radius: 15px; /* More rounded corners */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Stronger shadow */
+}
+
+.search-container input[type="text"] {
+    width: 500px; /* Slightly wider input */
+    height: 60px; /* Taller input */
+    padding: 15px 20px; /* Increased padding inside input */
+    font-size: 20px; /* Larger font size */
+    border-radius: 30px; /* More rounded input */
+    border: 2px solid var(--secondary-color);
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.1); /* Inset shadow */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* Transition for shadow too */
+}
+
+.search-container input[type="text"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.1), 0 0 10px rgba(var(--primary-color-rgb), 0.4); /* Stronger focus shadow */
+}
+
+.search-container button {
+    padding: 16px 32px; /* Slightly larger button */
+    font-size: 19px; /* Larger font size */
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+    border: none;
+    border-radius: 30px; /* More rounded button */
+    cursor: pointer;
+    margin-left: 20px; /* Increased margin */
+    font-weight: bold;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3); /* Button shadow */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Shadow transition */
+}
+
+.search-container button:hover {
+    background-color: #e0b300; /* Darker gold on hover */
+    transform: scale(1.07); /* Slightly more scale on hover */
+    box-shadow: 0 4px 9px rgba(0, 0, 0, 0.4); /* Hover shadow */
+}
+
+.search-container button:active {
+    transform: scale(1.0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Active shadow */
+}
+
+
+/* Results Section Styles (Search Page) - Grid Layout */
+#results {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive grid columns */
+    gap: 25px; /* Increased gap between items */
+}
+
+.movie-item {
+    padding: 25px; /* Increased padding */
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Stronger shadow for grid items */
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; /* Border transition */
+    border: 1px solid #f0f0f0; /* Lighter border */
+}
+
+.movie-item:hover {
+    transform: translateY(-5px); /* More pronounced lift on hover */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); /* Stronger hover shadow */
+    border-color: #ddd; /* Slightly darker border on hover */
+}
+
+.movie-item h2 {
+    font-size: 1.6rem; /* Slightly smaller heading in grid */
+    margin: 0 0 12px 0; /* Adjusted margin */
+    color: var(--accent-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+}
+
+.movie-item p {
+    margin: 6px 0; /* Adjusted margin */
+    color: var(--text-color-dark);
+    font-size: 1rem;
+    line-height: 1.5; /* Improved line height for readability */
+}
+
+/* Movie Details Section Styles (Search Page) */
+#movie-details {
+    margin-top: 60px; /* Increased margin */
+    padding: 40px; /* Increased padding */
+    background-color: #fff;
+    border-radius: 15px; /* More rounded corners */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25); /* Stronger shadow */
+    border: 1px solid #eee;
+    display: flex; /* Flex layout for details */
+    align-items: start; /* Align items to the start */
+    gap: 30px; /* Gap between image and text */
+    text-align: left; /* Left align text in details */
+}
+
+#movie-details h2 {
+    font-size: 2.5rem; /* Larger heading for details */
+    margin-bottom: 20px; /* Increased margin */
+    color: var(--primary-color);
+    text-align: left; /* Left align detail heading */
+    text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
+}
+
+#movie-details img {
+    max-width: 300px; /* Fixed width for movie poster in details */
+    height: auto;
+    border-radius: 10px; /* Rounded corners for poster */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow for poster */
+}
+
+#movie-details-text {
+    flex: 1; /* Take remaining space for text content */
+}
+
+#movie-details p {
+    margin-bottom: 20px; /* Increased margin */
+    font-size: 1.1rem;
+    line-height: 1.7; /* Improved line height */
+    color: var(--text-color-dark);
+}
+
+#movie-details strong {
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+/* Loading Icon Styles */
+#loadingIcon {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1.5s linear infinite;
+    font-size: 70px; /* Slightly larger */
+    color: var(--primary-color);
+    z-index: 1000;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Shadow for loading icon */
+}
+
+.spinner-border {
+    width: 3.5rem; /* Slightly larger spinner */
+    height: 3.5rem;
+    border-width: 0.4em;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Footer Styles */
+footer {
+    background-color: var(--secondary-color);
+    color: var(--text-color-light);
+    padding: 20px 0;
+    margin-top: 50px;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3); /* Shadow on top of footer */
+}
+
+footer p {
+    font-size: 0.9rem;
+}
+
+
+/* Media Queries for Responsiveness */
+/* For tablets and larger phones (up to 992px) */
+@media (max-width: 992px) {
+    h1 {
+        font-size: 3rem;
+    }
+
+    .search-container input[type="text"] {
+        width: 80%;
+        font-size: 18px;
+        height: 55px;
+    }
+
+    .search-container button {
+        font-size: 18px;
+        padding: 14px 28px;
+    }
+
+    #results {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Adjust grid for tablets */
+    }
+
+    #movie-details {
+        flex-direction: column; /* Stack details vertically on smaller screens */
+        text-align: center; /* Center text in details on smaller screens */
+    }
+
+    #movie-details img {
+        max-width: 70%; /* Adjust poster size on tablets */
+        margin-bottom: 20px;
+    }
+
+    #movie-details h2, #movie-details p {
+        text-align: center; /* Center align detail text */
+    }
+}
+
+/* For mobile phones (up to 768px) */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+    }
+
+    .search-container {
+        padding: 25px;
+        flex-direction: column;
+    }
+
+    .search-container input[type="text"] {
+        width: 95%;
+        margin-bottom: 15px;
+        height: 50px;
+        font-size: 16px;
+    }
+
+    .search-container button {
+        margin-left: 0;
+        width: 95%;
+        font-size: 16px;
+        padding: 12px 24px;
+    }
+
+    #results {
+        grid-template-columns: 1fr; /* Single column on mobile */
+        gap: 20px;
+    }
+
+    .movie-item {
+        padding: 20px;
+    }
+
+    .movie-item h2 {
+        font-size: 1.4rem;
+    }
+
+    .movie-item p {
+        font-size: 0.95rem;
+    }
+
+    #movie-details {
+        padding: 25px;
+        margin-top: 40px;
+    }
+
+    #movie-details h2 {
+        font-size: 2.2rem;
+    }
+
+    #movie-details p {
+        font-size: 1rem;
+    }
+
+    #loadingIcon {
+        font-size: 50px;
+    }
+
+    .spinner-border {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}       #movie-details {
+            align-items: flex-start;
+            text-align: left;
+        }
+
+        #movie-details-text {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="background-color: var(--background-color); padding: 20px;">
+        <a style="display: block; margin-bottom: 20px; color: var(--accent-color); text-decoration: none; font-size: 1.1rem; text-align: center;">
+            <i class="fas fa-arrow-left" style="margin-right: 5px;"></i> The OASIS MovieStar
+        </a>
+        <h1>Search for Your Favorite Movies</h1>
+        <div class="search-container">
+            <input type="text" id="searchQuery" placeholder="Enter a movie title">
+            <button id="submit">Search</button>
+        </div>
+
+        <div id="results"></div>
+        <div id="movie-details" style="display: none;">
+            <div id="movie-details-text">
+                <!-- Movie details will be populated here -->
+            </div>
+            <!-- Movie poster will be placed outside text div for layout -->
+        </div>
+        <div id="loadingIcon" class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("submit").addEventListener("click", submit);
+
+        document.getElementById("searchQuery").addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                submit();
+            }
+        });
+
+        function submit() {
+            const query = document.getElementById("searchQuery").value.trim(); 
+            if (query) {
+                showLoadingIcon(); // Show the loading icon while fetching data.
+                fetchMovies(query); // Call the fetchMovies function to get movie data from the API.
+            } else {
+                alert("Please enter a movie title."); // Display an alert if the search input is empty.
+            }
+        }
+
+        // Function to display the loading icon.
+        function showLoadingIcon() {
+            document.getElementById("loadingIcon").style.display = "block";
+        }
+
+        // Function to hide the loading icon.
+        function hideLoadingIcon() {
+            document.getElementById("loadingIcon").style.display = "none";
+        }
+
+        // Function to fetch movies from the OMDB API based on the search query.
+        function fetchMovies(query) {
+            const apiKey = "c33ae8d6";
+            const url = `https://www.omdbapi.com/?s=${query}&apikey=${apiKey}`; // Construct the API URL.
+
+            fetch(url) // Make an API request to the OMDB API.
+                .then(response => response.json()) // Parse the response as JSON.
+                .then(data => {
+                    hideLoadingIcon(); // Hide the loading icon after receiving the response.
+                    if (data.Response === "True") {
+                        displayMovies(data.Search); // If the response is successful, display the movie results.
+                    } else {
+                        displayError("No results found."); // If no results are found, display an error message.
+                    }
+                })
+                .catch(error => {
+                    hideLoadingIcon(); // Hide the loading icon in case of an error.
+                    displayError("Error fetching movies. Please try again later."); // Display a generic error message to the user.
+                    console.error("Error fetching movies:", error); // Log the error to the console for debugging.
+                });
+        }
+
+        // Function to display the list of movies in the results container in a grid layout.
+        function displayMovies(movies) {
+            const resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = ""; // Clear any previous results.
+            resultsContainer.style.display = "grid"; // Set display to grid
+            document.getElementById("movie-details").innerHTML=`<div id="movie-details-text">
+                <!-- Movie details will be populated here -->
+            </div>`; // Remove image
+            document.getElementById("movie-details").style.display = "none"; // Remove movie Details
+
+            movies.forEach(movie => {
+                const movieItem = document.createElement("div"); // Create a div for each movie item.
+                movieItem.classList.add("movie-item"); // Add the 'movie-item' class for styling.
+                movieItem.innerHTML = `
+                    <h2>${movie.Title}</h2>
+                    <p>Year: ${movie.Year}</p>
+                    <p>Type: ${movie.Type}</p>
+                `;
+                movieItem.addEventListener("click", function () {
+                    showLoadingIcon();
+                    fetchMovieDetails(movie.imdbID);
+                });
+                resultsContainer.appendChild(movieItem); // Append the movie item to the results container.
+            });
+        }
+
+
+        // Function to fetch detailed information for a specific movie using its imdbID.
+        function fetchMovieDetails(imdbID) {
+            const apiKey = "c33ae8d6";
+            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${apiKey}`; // Construct the API URL using imdbID.
+
+            fetch(url) // Fetch movie details from the OMDB API.
+                .then(response => response.json()) // Parse the response as JSON.
+                .then(data => {
+                    hideLoadingIcon(); // Hide loading icon after receiving details.
+                    if (data.Response === "True") {
+                        console.log(data);
+                        displayMovieDetails(data); // If successful, display movie details.
+                    } else {
+                        alert("Movie details not found."); // Alert if movie details are not found.
+                    }
+                })
+                .catch(error => {
+                    hideLoadingIcon(); // Hide loading icon in case of error.
+                    console.error("Error fetching movie details:", error); // Log error to console.
+                });
+        }
+
+        // Function to display detailed movie information in the movie-details container.
+        function displayMovieDetails(movie) {
+            const resultsContainer = document.getElementById("results");
+            const detailsContainer = document.getElementById("movie-details");
+            const detailsTextContainer = document.getElementById("movie-details-text"); // Get text container
+
+            resultsContainer.style.display = "none"; // Hide the search results container.
+            detailsContainer.style.display = "flex"; // Show the movie details container as flex
+            try{
+            detailsTextContainer.innerHTML = `
+                <h2>${movie.Title}</h2>
+                <p><strong>Release Date:</strong> ${movie.Released || "N/A"}</p>
+                <p><strong>Languages:</strong> ${movie.Language || "N/A"}</p>
+                <p><strong>Country of Origin:</strong> ${movie.Country || "N/A"}</p>
+                <p><strong>Box Office:</strong> ${movie.BoxOffice || "N/A"}</p>
+                <p><strong>Awards:</strong> ${movie.Awards || "N/A"}</p>
+                <p><strong>DVDs:</strong> ${movie.DVD || "N/A"}</p>
+                <p><strong>Production:</strong> ${movie.Production || "N/A"}</p>
+                <p><strong>Director:</strong> ${movie.Director || "N/A"}</p>
+                <p><strong>Actors:</strong> ${movie.Actors || "N/A"}</p>
+                <p><strong>Plot:</strong> ${movie.Plot || "N/A"}</p>
+                <p><strong>Genre:</strong> ${movie.Genre || "N/A"}</p>
+                <p><strong>Rated:</strong> ${movie.Rated || "N/A"}</p>
+                <p><strong>Runtime:</strong> ${movie.Runtime || "N/A"}</p>
+                <p><strong>Website:</strong> ${movie.Website || "N/A"}</p>
+                <p><strong>MetaScore Ratings:</strong>${movie.Ratings[2].Value || "N/A"}</p>
+                <p><strong>TMDB Ratings:</strong>${movie.Ratings[1].Value || "N/A"}</p>
+                <p><strong>IMDB Ratings:</strong>${movie.Ratings[0].Value || "N/A"}</p>
+                <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
+            `; // Populate the details text container with movie information.
+
+            // Dynamically set the movie poster in the details container itself
+            detailsContainer.innerHTML += movie.Poster !== "N/A" ? `<img src="${movie.Poster}" alt="Movie Poster">` : "";
+        }catch(error){
+            try{
+            detailsTextContainer.innerHTML = `
+                <h2>${movie.Title}</h2>
+                <p><strong>Release Date:</strong> ${movie.Released || "N/A"}</p>
+                <p><strong>Languages:</strong> ${movie.Language || "N/A"}</p>
+                <p><strong>Country of Origin:</strong> ${movie.Country || "N/A"}</p>
+                <p><strong>Box Office:</strong> ${movie.BoxOffice || "N/A"}</p>
+                <p><strong>Awards:</strong> ${movie.Awards || "N/A"}</p>
+                <p><strong>DVDs:</strong> ${movie.DVD || "N/A"}</p>
+                <p><strong>Production:</strong> ${movie.Production || "N/A"}</p>
+                <p><strong>Director:</strong> ${movie.Director || "N/A"}</p>
+                <p><strong>Actors:</strong> ${movie.Actors || "N/A"}</p>
+                <p><strong>Plot:</strong> ${movie.Plot || "N/A"}</p>
+                <p><strong>Genre:</strong> ${movie.Genre || "N/A"}</p>
+                <p><strong>Rated:</strong> ${movie.Rated || "N/A"}</p>
+                <p><strong>Runtime:</strong> ${movie.Runtime || "N/A"}</p>
+                <p><strong>Website:</strong> ${movie.Website || "N/A"}</p>
+                <p><strong>MetaScore Ratings:</strong> ${movie.Metascore}</p>
+                <p><strong>TMDB Ratings:</strong> N/A</p>
+                <p><strong>IMDB Ratings:</strong> ${movie.imdbRating}</p>
+                <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
+            `; // Populate the details text container with movie information.
+
+            // Dynamically set the movie poster in the details container itself
+            detailsContainer.innerHTML += movie.Poster !== "N/A" ? `<img src="${movie.Poster}" alt="Movie Poster">` : "";
+        
+        }catch(error){detailsContainer.innerHTML="An Error fetching your movie";}}}
+
+
+        // Function to display an error message in the results container.
+        function displayError(message) {
+            const resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = `<p style="color: red;">${message}</p>`; // Display the error message in red color.
+        }
+    </script>
+</body>
+
+</html>
