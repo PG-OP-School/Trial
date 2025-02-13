@@ -252,8 +252,15 @@ h2 {
     /* Slightly larger spinner */
     height: 3.5rem;
     border-width: 0.4em;
+    animation: spin 1s linear infinite; }
+    @keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
-
 
 /* For tablets and larger phones (up to 992px) */
 @media (max-width: 992px) {
@@ -462,30 +469,34 @@ h2 {
     
         // Function to display the list of movies in the results container in a grid layout.
         function displayMovies(movies) {
-            const resultsContainer = document.getElementById("results");
-            resultsContainer.innerHTML = ""; // Clear any previous results.
-            resultsContainer.style.display = "grid"; // Set display to grid
-            document.getElementById("movie-details").innerHTML = `<div id="movie-details-text">
-                <!-- Movie details will be populated here -->
-            </div>`; // Remove image
-            document.getElementById("movie-details").style.display = "none"; // Remove movie Details
-    
-            movies.forEach(movie => {
-                const movieItem = document.createElement("div"); // Create a div for each movie item.
-                movieItem.classList.add("movie-item"); // Add the 'movie-item' class for styling.
-                movieItem.innerHTML = `
-                    <h2>${movie.Title}</h2>
-                    <p>Year: ${movie.Year}</p>
-                    <p>Type: ${movie.Type}</p>
-                `;
-                movieItem.addEventListener("click", function () {
-                    showLoadingIcon();
-                    fetchMovieDetails(movie.imdbID);
-                });
-                resultsContainer.appendChild(movieItem); // Append the movie item to the results container.
-            });
-        }
-    
+    const resultsContainer = document.getElementById("results");
+    resultsContainer.innerHTML = ""; // Clear any previous results.
+    resultsContainer.style.display = "grid"; // Set display to grid
+    document.getElementById("movie-details").innerHTML = `<div id="movie-details-text">
+        <!-- Movie details will be populated here -->
+    </div>`; // Remove image
+    document.getElementById("movie-details").style.display = "none"; // Remove movie Details
+
+    // Sort the movies array by the 'Year' property
+    movies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year)); // Sort in descending order (latest first)
+
+    // Loop through the sorted movies array
+    movies.forEach(movie => {
+        const movieItem = document.createElement("div"); // Create a div for each movie item.
+        movieItem.classList.add("movie-item"); // Add the 'movie-item' class for styling.
+        movieItem.innerHTML = `
+            <h2>${movie.Title}</h2>
+            <p>Year: ${movie.Year}</p>
+            <p>Type: ${movie.Type}</p>
+        `;
+        movieItem.addEventListener("click", function () {
+            showLoadingIcon();
+            fetchMovieDetails(movie.imdbID);
+        });
+        resultsContainer.appendChild(movieItem); // Append the movie item to the results container.
+    });
+}
+
         // Function to fetch detailed information for a specific movie using its imdbID.
         function fetchMovieDetails(imdbID) {
             const apiKey = "c33ae8d6";
