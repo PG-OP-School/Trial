@@ -348,7 +348,7 @@ h2 {
     }
 
     #movie-details {
-        flex-direction: column;  /* Stack elements vertically */
+        flex-direction: column-reverse;  /* Stack elements vertically */
         align-items: center;     /* Center the content */
         justify-content: center; /* Center the content */
         text-align: center;      /* Center text */
@@ -612,7 +612,7 @@ h2 {
                     <p><strong>TMDB Ratings:</strong> ${movie.Ratings[1]?.Value || "N/A"}</p>
                     <p><strong>IMDB Ratings:</strong> ${movie.Ratings[0]?.Value || "N/A"}</p>
                     <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
-                    <p><strong>Wikipedia URL:</strong> ${wikiurl}</p>
+                    <p><strong style="color:red;">Wikipedia URL:</strong> ${wikiurl}</p>
                 `;
                 // Add the movie poster if available.
                 detailsContainer.innerHTML += movie.Poster !== "N/A" ? `<img src="${movie.Poster}" id="img" alt="Movie Poster">` : "";
