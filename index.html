@@ -413,18 +413,15 @@ h2 {
         <div id="loadingIcon" class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-    </div>
-    
-    
-    <script>
+    </div><script>
         document.getElementById("submit").addEventListener("click", submit);
-    
+        
         document.getElementById("searchQuery").addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
                 submit();
             }
         });
-    
+        
         function submit() {
             const query = document.getElementById("searchQuery").value.trim();
             if (query) {
@@ -449,7 +446,7 @@ h2 {
         function fetchMovies(query) {
             const apiKey = "c33ae8d6";
             const url = `https://www.omdbapi.com/?s=${query}&apikey=${apiKey}`; // Construct the API URL.
-    
+        
             fetch(url) // Make an API request to the OMDB API.
                 .then(response => response.json()) // Parse the response as JSON.
                 .then(data => {
@@ -469,39 +466,45 @@ h2 {
     
         // Function to display the list of movies in the results container in a grid layout.
         function displayMovies(movies) {
-    const resultsContainer = document.getElementById("results");
-    resultsContainer.innerHTML = ""; // Clear any previous results.
-    resultsContainer.style.display = "grid"; // Set display to grid
-    document.getElementById("movie-details").innerHTML = `<div id="movie-details-text">
-        <!-- Movie details will be populated here -->
-    </div>`; // Remove image
-    document.getElementById("movie-details").style.display = "none"; // Remove movie Details
-
-    // Sort the movies array by the 'Year' property
-    movies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year)); // Sort in descending order (latest first)
-
-    // Loop through the sorted movies array
-    movies.forEach(movie => {
-        const movieItem = document.createElement("div"); // Create a div for each movie item.
-        movieItem.classList.add("movie-item"); // Add the 'movie-item' class for styling.
-        movieItem.innerHTML = `
-            <h2>${movie.Title}</h2>
-            <p>Year: ${movie.Year}</p>
-            <p>Type: ${movie.Type}</p>
-        `;
-        movieItem.addEventListener("click", function () {
-            showLoadingIcon();
-            fetchMovieDetails(movie.imdbID);
-        });
-        resultsContainer.appendChild(movieItem); // Append the movie item to the results container.
-    });
-}
-
+            const resultsContainer = document.getElementById("results");
+            resultsContainer.innerHTML = ""; // Clear any previous results.
+            resultsContainer.style.display = "grid"; // Set display to grid
+            document.getElementById("movie-details").innerHTML = `<div id="movie-details-text">
+                <!-- Movie details will be populated here -->
+            </div>`; // Remove image
+            document.getElementById("movie-details").style.display = "none"; // Remove movie Details
+    
+            // Sort the movies array by the 'Year' property
+            movies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year)); // Sort in descending order (latest first)
+    
+            // Loop through the sorted movies array
+            movies.forEach(movie => {
+                const movieItem = document.createElement("div"); // Create a div for each movie item.
+                movieItem.classList.add("movie-item"); // Add the 'movie-item' class for styling.
+                movieItem.innerHTML = `
+                    <h2>${movie.Title}</h2>
+                    <p>Year: ${movie.Year}</p>
+                    <p>Type: ${movie.Type}</p>
+                `;
+                movieItem.addEventListener("click", function () {
+                    showLoadingIcon();
+                    fetchMovieDetails(movie.imdbID);
+                });
+                resultsContainer.appendChild(movieItem); // Append the movie item to the results container.
+            });
+    
+            // Update the state for history push
+            history.pushState({page: "searchResults", query: movies[0].Title}, "Search Results", `?query=${encodeURIComponent(movies[0].Title)}`);
+            
+            // Scroll to the top of the page after displaying search results
+            window.scrollTo(0, 0);
+        }
+    
         // Function to fetch detailed information for a specific movie using its imdbID.
         function fetchMovieDetails(imdbID) {
             const apiKey = "c33ae8d6";
             const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${apiKey}`; // Construct the API URL using imdbID.
-    
+        
             fetch(url) // Fetch movie details from the OMDB API.
                 .then(response => response.json()) // Parse the response as JSON.
                 .then(dataOMDB => {
@@ -511,18 +514,18 @@ h2 {
                         const movieName = dataOMDB.Title;
                         const formattedMovieName = movieName.replace(/\s+/g, '_');
                         const apiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${formattedMovieName}`;
-    
+        
                         // Use the Wikipedia API to check if the page exists
                         fetch(apiUrl)
                             .then(response => response.json())
                             .then(data => {
                                 console.log(data);
+                                let statusOfWiki;
                                 if (data.title == 'Not found.') {
                                     statusOfWiki = "This movie doesn't have a Wikipedia page.";
                                 } else {
                                     statusOfWiki = `https://en.wikipedia.org/wiki/${formattedMovieName}`;
                                 }
-    
                                 displayMovieDetails(dataOMDB, statusOfWiki); // If successful, display movie details.
                             })
                             .catch(error => {
@@ -570,52 +573,56 @@ h2 {
                 <p><strong>Rated:</strong> ${movie.Rated || "N/A"}</p>
                 <p><strong>Runtime:</strong> ${movie.Runtime || "N/A"}</p>
                 <p><strong>Website:</strong> ${movie.Website || "N/A"}</p>
-                <p><strong>MetaScore Ratings:</strong>${movie.Ratings[2].Value || "N/A"}</p>
-                <p><strong>TMDB Ratings:</strong>${movie.Ratings[1].Value || "N/A"}</p>
-                <p><strong>IMDB Ratings:</strong>${movie.Ratings[0].Value || "N/A"}</p>
+                <p><strong>MetaScore Ratings:</strong>${movie.Ratings[2]?.Value || "N/A"}</p>
+                <p><strong>TMDB Ratings:</strong>${movie.Ratings[1]?.Value || "N/A"}</p>
+                <p><strong>IMDB Ratings:</strong>${movie.Ratings[0]?.Value || "N/A"}</p>
                 <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
                 <p><strong>Wikipedia URL:</strong> ${wikiurl}</p>
             `; // Populate the details text container with movie information.
-    
+        
                 // Dynamically set the movie poster in the details container itself
                 detailsContainer.innerHTML += movie.Poster !== "N/A" ? `<img src="${movie.Poster}" id="img" alt="Movie Poster">` : "";
             } catch (error) {
-                try {
-                    detailsTextContainer.innerHTML = `
-                    <h2>${movie.Title}</h2>
-                    <p><strong>Release Date:</strong> ${movie.Released || "N/A"}</p>
-                    <p><strong>Languages:</strong> ${movie.Language || "N/A"}</p>
-                    <p><strong>Country of Origin:</strong> ${movie.Country || "N/A"}</p>
-                    <p><strong>Box Office:</strong> ${movie.BoxOffice || "N/A"}</p>
-                    <p><strong>Awards:</strong> ${movie.Awards || "N/A"}</p>
-                    <p><strong>DVDs:</strong> ${movie.DVD || "N/A"}</p>
-                    <p><strong>Production:</strong> ${movie.Production || "N/A"}</p>
-                    <p><strong>Director:</strong> ${movie.Director || "N/A"}</p>
-                    <p><strong>Actors:</strong> ${movie.Actors || "N/A"}</p>
-                    <p><strong>Plot:</strong> ${movie.Plot || "N/A"}</p>
-                    <p><strong>Genre:</strong> ${movie.Genre || "N/A"}</p>
-                    <p><strong>Rated:</strong> ${movie.Rated || "N/A"}</p>
-                    <p><strong>Runtime:</strong> ${movie.Runtime || "N/A"}</p>
-                    <p><strong>Website:</strong> ${movie.Website || "N/A"}</p>
-                    <p><strong>MetaScore Ratings:</strong>${movie.metaScore || "N/A"}</p>
-                    <p><strong>IMDB Ratings:</strong>${movie.imdbRatings || "N/A"}</p>
-                    <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
-                    <p><strong>Wikipedia URL:</strong>${wikiurl}</a></p>
-                `; // Populate the details text container with movie information.
-    
-                // Dynamically set the movie poster in the details container itself
-                detailsContainer.innerHTML += movie.Poster !== "N/A" ? `<img id="img"src="${movie.Poster}" alt="Movie Poster">` : "";
-            } catch (error) {
-                detailsContainer.innerHTML = "An Error fetching your movie, "+error; // Error handling
+                detailsTextContainer.innerHTML = "An Error fetching your movie, "+error; // Error handling
             }
-        }}
+    
+            // Update the state for history push
+            history.pushState({page: "movieDetails", query: movie.Title}, "Movie Details", `?movie=${encodeURIComponent(movie.Title)}`);
+            
+            // Scroll to the top when movie details are displayed
+            window.scrollTo(0, 0);
+        }
     
         // Function to display an error message in the results container.
         function displayError(message) {
             const resultsContainer = document.getElementById("results");
             resultsContainer.innerHTML = `<p style="color: red;">${message}</p>`; // Display the error message in red color.
         }
+    
+        // Listen to the popstate event to handle the back button
+        window.onpopstate = function(event) {
+            if (event.state && event.state.page === "searchResults") {
+                // Show the search results again
+                document.getElementById("results").style.display = "grid";
+                document.getElementById("movie-details").style.display = "none";
+            } else if (event.state && event.state.page === "movieDetails") {
+                // Show the movie details again (this could be if the user manually navigated)
+                document.getElementById("results").style.display = "none";
+                document.getElementById("movie-details").style.display = "flex";
+            } else {
+                // Reset to original state (if user is navigating to initial state)
+                document.getElementById("results").style.display = "none";
+                document.getElementById("movie-details").style.display = "none";
+            }
+    
+            // Scroll to the top when navigating back
+            window.scrollTo(0, 0);
+        }
     </script>
+    
+    
+    
+    
 </body>
 
 </html>
