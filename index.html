@@ -237,28 +237,22 @@ h2 {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
     animation: spin 1.5s linear infinite;
-    font-size: 70px;
-    /* Slightly larger */
     color: var(--primary-color);
     z-index: 1000;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     /* Shadow for loading icon */
 }
 
-.spinner-border {
-    width: 3.5rem;
-    /* Slightly larger spinner */
-    height: 3.5rem;
-    border-width: 0.4em;
-    animation: spin 1s linear infinite; }
     @keyframes spin {
     0% {
-        transform: rotate(0deg);
+        transform: scale(1);
     }
-    100% {
-        transform: rotate(360deg);
+    50% {
+        transform: scale(1.5);
+    }
+    100%{
+        transform: scale(1);
     }
 }
 
@@ -382,18 +376,13 @@ h2 {
     #loadingIcon {
         font-size: 50px;
     }
-
-    .spinner-border {
-        width: 2.5rem;
-        height: 2.5rem;
-    }
 }
 </style>
 </head>
 
 <body>
     <div style="background-color: var(--background-color); padding: 20px;">
-        <a
+        <a id="navbar_redirect"
             style="display: block; margin-bottom: 20px; color: var(--accent-color); text-decoration: none; font-size: 1.1rem; text-align: center;">
             <i class="fas fa-arrow-left" style="margin-right: 5px;"></i> The OASIS MovieStar
         </a>
@@ -410,112 +399,157 @@ h2 {
             </div>
             <!-- Movie poster will be placed outside text div for layout -->
         </div>
-        <div id="loadingIcon" class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div><script>
+    </div>
+    <script>
+        // Create the audio object for the loading sound.
+        const audio = new Audio('loading.mp3');
+        const raudio = new Audio('rolling.mp3');
+    
+        // Helper function that plays the loading audio and calls the callback when the audio ends.
+        function playAudioThen(callback) {
+            
+            // Reset the audio if it's been played before.
+            audio.pause();
+            audio.currentTime = 0;
+            audio.play().then(() => {
+                audio.addEventListener('ended', () => {
+                    callback();
+                }, { once: true });
+            }).catch(err => {
+                console.error('Error playing audio:', err);
+                callback(); // If audio fails, proceed immediately.
+            });
+        }
+        function playRAudioThen(callback) {
+            
+            // Reset the audio if it's been played before.
+            raudio.pause();
+            raudio.currentTime = 0;
+            raudio.play().then(() => {
+                raudio.addEventListener('ended', () => {
+                    callback();
+                }, { once: true });
+            }).catch(err => {
+                console.error('Error playing audio:', err);
+                callback(); // If audio fails, proceed immediately.
+            });
+        }
+        // Attach event listeners for the submit button and the Enter key.
         document.getElementById("submit").addEventListener("click", submit);
-        
         document.getElementById("searchQuery").addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
                 submit();
             }
         });
-        
+    
+        // Submit function for searching movies.
         function submit() {
             const query = document.getElementById("searchQuery").value.trim();
             if (query) {
-                showLoadingIcon(); // Show the loading icon while fetching data.
-                fetchMovies(query); // Call the fetchMovies function to get movie data from the API.
+                // Play audio and then fetch movies after the audio ends.
+                playAudioThen(() => {
+                    fetchMovies(query);
+                });
             } else {
-                alert("Please enter a movie title."); // Display an alert if the search input is empty.
+                alert("Please enter a movie title.");
             }
         }
     
         // Function to display the loading icon.
-        function showLoadingIcon() {
-            document.getElementById("loadingIcon").style.display = "block";
-        }
+        
     
         // Function to hide the loading icon.
-        function hideLoadingIcon() {
-            document.getElementById("loadingIcon").style.display = "none";
-        }
+        
     
         // Function to fetch movies from the OMDB API based on the search query.
         function fetchMovies(query) {
             const apiKey = "c33ae8d6";
-            const url = `https://www.omdbapi.com/?s=${query}&apikey=${apiKey}`; // Construct the API URL.
-        
-            fetch(url) // Make an API request to the OMDB API.
-                .then(response => response.json()) // Parse the response as JSON.
+            const url = `https://www.omdbapi.com/?s=${query}&apikey=${apiKey}`;
+            
+            fetch(url)
+                .then(response => response.json())
                 .then(data => {
-                    hideLoadingIcon(); // Hide the loading icon after receiving the response.
+                    
                     if (data.Response === "True") {
-                        displayMovies(data.Search); // If the response is successful, display the movie results.
+                        displayMovies(data.Search);
                     } else {
-                        displayError("No results found."); // If no results are found, display an error message.
+                        displayError("No results found.");
                     }
                 })
                 .catch(error => {
-                    hideLoadingIcon(); // Hide the loading icon in case of an error.
-                    displayError("Error fetching movies. Please try again later."); // Display a generic error message to the user.
-                    console.error("Error fetching movies:", error); // Log the error to the console for debugging.
+                    
+                    displayError("Error fetching movies. Please try again later.");
+                    console.error("Error fetching movies:", error);
                 });
         }
     
-        // Function to display the list of movies in the results container in a grid layout.
+        // Function to display the list of movies in the results container.
         function displayMovies(movies) {
             const resultsContainer = document.getElementById("results");
-            resultsContainer.innerHTML = ""; // Clear any previous results.
-            resultsContainer.style.display = "grid"; // Set display to grid
-            document.getElementById("movie-details").innerHTML = `<div id="movie-details-text">
-                <!-- Movie details will be populated here -->
-            </div>`; // Remove image
-            document.getElementById("movie-details").style.display = "none"; // Remove movie Details
+            resultsContainer.innerHTML = "";
+            resultsContainer.style.display = "grid";
+            document.getElementById("movie-details").innerHTML = `<div id="movie-details-text"></div>`;
+            document.getElementById("movie-details").style.display = "none";
     
-            // Sort the movies array by the 'Year' property
-            movies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year)); // Sort in descending order (latest first)
+            // Sort movies by Year.
+            movies.sort((a, b) => parseInt(a.Year) - parseInt(b.Year));
     
-            // Loop through the sorted movies array
             movies.forEach(movie => {
-                const movieItem = document.createElement("div"); // Create a div for each movie item.
-                movieItem.classList.add("movie-item"); // Add the 'movie-item' class for styling.
+                const movieItem = document.createElement("div");
+                movieItem.classList.add("movie-item");
                 movieItem.innerHTML = `
                     <h2>${movie.Title}</h2>
                     <p>Year: ${movie.Year}</p>
                     <p>Type: ${movie.Type}</p>
                 `;
+                // When a movie is clicked, play the audio then fetch its details.
                 movieItem.addEventListener("click", function () {
-                    showLoadingIcon();
-                    fetchMovieDetails(movie.imdbID);
+                    playRAudioThen(() => {
+                        fetchMovieDetails(movie.imdbID);
+                    });
                 });
-                resultsContainer.appendChild(movieItem); // Append the movie item to the results container.
+                resultsContainer.appendChild(movieItem);
             });
     
-            // Update the state for history push
+            // Update browser history.
             history.pushState({page: "searchResults", query: movies[0].Title}, "Search Results", `?query=${encodeURIComponent(movies[0].Title)}`);
             
-            // Scroll to the top of the page after displaying search results
+            // Scroll to the top.
             window.scrollTo(0, 0);
         }
+        document.getElementById("navbar_redirect").addEventListener("click", function() {
+    // Hide the results and movie details sections.
+    document.getElementById("results").style.display = "none";
+    document.getElementById("movie-details").style.display = "none";
     
-        // Function to fetch detailed information for a specific movie using its imdbID.
+    // Optionally, clear the search input and focus on it.
+    const searchInput = document.getElementById("searchQuery");
+    searchInput.value = "";
+    searchInput.focus();
+    
+    // Update the browser history to reflect the search page state.
+    history.pushState({page: "search"}, "Search Page", "?search");
+    
+    // Scroll to the top of the page.
+    window.scrollTo(0, 0);
+});
+
+        // Function to fetch detailed information for a specific movie.
         function fetchMovieDetails(imdbID) {
             const apiKey = "c33ae8d6";
-            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${apiKey}`; // Construct the API URL using imdbID.
-        
-            fetch(url) // Fetch movie details from the OMDB API.
-                .then(response => response.json()) // Parse the response as JSON.
+            const url = `https://www.omdbapi.com/?i=${imdbID}&apikey=${apiKey}`;
+            
+            fetch(url)
+                .then(response => response.json())
                 .then(dataOMDB => {
-                    hideLoadingIcon(); // Hide loading icon after receiving details.
+                    
                     if (dataOMDB.Response === "True") {
                         console.log(dataOMDB);
                         const movieName = dataOMDB.Title;
                         const formattedMovieName = movieName.replace(/\s+/g, '_');
                         const apiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${formattedMovieName}`;
-        
-                        // Use the Wikipedia API to check if the page exists
+                        
+                        // Use the Wikipedia API to check if the page exists.
                         fetch(apiUrl)
                             .then(response => response.json())
                             .then(data => {
@@ -526,103 +560,94 @@ h2 {
                                 } else {
                                     statusOfWiki = `https://en.wikipedia.org/wiki/${formattedMovieName}`;
                                 }
-                                displayMovieDetails(dataOMDB, statusOfWiki); // If successful, display movie details.
+                                displayMovieDetails(dataOMDB, statusOfWiki);
                             })
                             .catch(error => {
                                 console.error("Error checking the Wikipedia page:", error);
                                 displayMovieDetails(dataOMDB, "Error fetching Wikipedia page");
                             });
                     } else {
-                        alert("Movie details not found."); // Alert if movie details are not found.
+                        alert("Movie details not found.");
                     }
                 })
                 .catch(error => {
-                    hideLoadingIcon(); // Hide loading icon in case of error.
-                    console.error("Error fetching movie details:", error); // Log error to console.
+                    
+                    console.error("Error fetching movie details:", error);
                 });
         }
     
-        // Function to display detailed movie information in the movie-details container.
+        // Function to display detailed movie information.
         function displayMovieDetails(movie, url) {
+            document.getElementById("movie-details").innerHTML = `<div id="movie-details-text"></div>`;
             const resultsContainer = document.getElementById("results");
             const detailsContainer = document.getElementById("movie-details");
             const detailsTextContainer = document.getElementById("movie-details-text");
             
-            resultsContainer.style.display = "none"; // Hide the search results container.
-            detailsContainer.style.display = "flex"; // Show the movie details container as flex
-            var wikiurl;
+            resultsContainer.style.display = "none";
+            detailsContainer.style.display = "flex";
+            let wikiurl;
             if(url.startsWith('http')){
-                wikiurl = `<a href="${url}" style="text-decoration:none;" target="_blank">${movie.Title}</a>`
-            }else{
+                wikiurl = `<a href="${url}" style="text-decoration:none;" target="_blank">${movie.Title}</a>`;
+            } else {
                 wikiurl = url;
             }
             try {
                 detailsTextContainer.innerHTML = `
-                <h2>${movie.Title}</h2>
-                <p><strong>Release Date:</strong> ${movie.Released || "N/A"}</p>
-                <p><strong>Languages:</strong> ${movie.Language || "N/A"}</p>
-                <p><strong>Country of Origin:</strong> ${movie.Country || "N/A"}</p>
-                <p><strong>Box Office:</strong> ${movie.BoxOffice || "N/A"}</p>
-                <p><strong>Awards:</strong> ${movie.Awards || "N/A"}</p>
-                <p><strong>DVDs:</strong> ${movie.DVD || "N/A"}</p>
-                <p><strong>Production:</strong> ${movie.Production || "N/A"}</p>
-                <p><strong>Director:</strong> ${movie.Director || "N/A"}</p>
-                <p><strong>Actors:</strong> ${movie.Actors || "N/A"}</p>
-                <p><strong>Plot:</strong> ${movie.Plot || "N/A"}</p>
-                <p><strong>Genre:</strong> ${movie.Genre || "N/A"}</p>
-                <p><strong>Rated:</strong> ${movie.Rated || "N/A"}</p>
-                <p><strong>Runtime:</strong> ${movie.Runtime || "N/A"}</p>
-                <p><strong>Website:</strong> ${movie.Website || "N/A"}</p>
-                <p><strong>MetaScore Ratings:</strong>${movie.Ratings[2]?.Value || "N/A"}</p>
-                <p><strong>TMDB Ratings:</strong>${movie.Ratings[1]?.Value || "N/A"}</p>
-                <p><strong>IMDB Ratings:</strong>${movie.Ratings[0]?.Value || "N/A"}</p>
-                <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
-                <p><strong>Wikipedia URL:</strong> ${wikiurl}</p>
-            `; // Populate the details text container with movie information.
-        
-                // Dynamically set the movie poster in the details container itself
+                    <h2>${movie.Title}</h2>
+                    <p><strong>Release Date:</strong> ${movie.Released || "N/A"}</p>
+                    <p><strong>Languages:</strong> ${movie.Language || "N/A"}</p>
+                    <p><strong>Country of Origin:</strong> ${movie.Country || "N/A"}</p>
+                    <p><strong>Box Office:</strong> ${movie.BoxOffice || "N/A"}</p>
+                    <p><strong>Awards:</strong> ${movie.Awards || "N/A"}</p>
+                    <p><strong>DVDs:</strong> ${movie.DVD || "N/A"}</p>
+                    <p><strong>Production:</strong> ${movie.Production || "N/A"}</p>
+                    <p><strong>Director:</strong> ${movie.Director || "N/A"}</p>
+                    <p><strong>Actors:</strong> ${movie.Actors || "N/A"}</p>
+                    <p><strong>Plot:</strong> ${movie.Plot || "N/A"}</p>
+                    <p><strong>Genre:</strong> ${movie.Genre || "N/A"}</p>
+                    <p><strong>Rated:</strong> ${movie.Rated || "N/A"}</p>
+                    <p><strong>Runtime:</strong> ${movie.Runtime || "N/A"}</p>
+                    <p><strong>Website:</strong> ${movie.Website || "N/A"}</p>
+                    <p><strong>MetaScore Ratings:</strong> ${movie.Ratings[2]?.Value || "N/A"}</p>
+                    <p><strong>TMDB Ratings:</strong> ${movie.Ratings[1]?.Value || "N/A"}</p>
+                    <p><strong>IMDB Ratings:</strong> ${movie.Ratings[0]?.Value || "N/A"}</p>
+                    <p><strong>IMDB Votes:</strong> ${movie.imdbVotes || "N/A"}</p>
+                    <p><strong>Wikipedia URL:</strong> ${wikiurl}</p>
+                `;
+                // Add the movie poster if available.
                 detailsContainer.innerHTML += movie.Poster !== "N/A" ? `<img src="${movie.Poster}" id="img" alt="Movie Poster">` : "";
             } catch (error) {
-                detailsTextContainer.innerHTML = "An Error fetching your movie, "+error; // Error handling
+                detailsTextContainer.innerHTML = "An Error fetching your movie, " + error;
             }
-    
-            // Update the state for history push
+        
+            // Update browser history.
             history.pushState({page: "movieDetails", query: movie.Title}, "Movie Details", `?movie=${encodeURIComponent(movie.Title)}`);
             
-            // Scroll to the top when movie details are displayed
+            // Scroll to the top.
             window.scrollTo(0, 0);
         }
     
         // Function to display an error message in the results container.
         function displayError(message) {
             const resultsContainer = document.getElementById("results");
-            resultsContainer.innerHTML = `<p style="color: red;">${message}</p>`; // Display the error message in red color.
+            resultsContainer.innerHTML = `<p style="color: red;">${message}</p>`;
         }
     
-        // Listen to the popstate event to handle the back button
+        // Handle the back button using the popstate event.
         window.onpopstate = function(event) {
             if (event.state && event.state.page === "searchResults") {
-                // Show the search results again
                 document.getElementById("results").style.display = "grid";
                 document.getElementById("movie-details").style.display = "none";
             } else if (event.state && event.state.page === "movieDetails") {
-                // Show the movie details again (this could be if the user manually navigated)
                 document.getElementById("results").style.display = "none";
                 document.getElementById("movie-details").style.display = "flex";
             } else {
-                // Reset to original state (if user is navigating to initial state)
                 document.getElementById("results").style.display = "none";
                 document.getElementById("movie-details").style.display = "none";
             }
-    
-            // Scroll to the top when navigating back
             window.scrollTo(0, 0);
         }
     </script>
-    
-    
-    
-    
 </body>
 
 </html>
